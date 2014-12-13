@@ -34,7 +34,7 @@ sub send_counter
 }
 
 # init the $sock variable
-$sock = IO::Socket::INET->new(Proto => 'udp', PeerPort => $statsdport, PeerAddr => $statsdhost) or die "Could not create socket: $!\n";
+$sock = IO::Socket::INET->new(Proto => 'udp', PeerPort => $statsdport, PeerAddr => $statsdhost, Blocking=>0) or die "Could not create socket: $!\n";
 
 
 while (1 == 1)
