@@ -6,6 +6,7 @@ $|++;
 ###
 # Load Modules
 use Time::HiRes; # 5.8+
+use IO::Socket; # 5.8+
 ###
 
 
@@ -14,12 +15,27 @@ use Time::HiRes; # 5.8+
 my $SLEEPTIME = 1000; # in microseconds
 my $TIMEFRAME = 10; # in seconds
 my $STARTTIME = time;
+my $PRENAME = 'system-stats-linux' . '.';
 ###
 
 ###
 # Variables
 my $ENDTIME = time;
+my $sock; # socket used to send to statsd
+my $statsdport = 8125;
+my $statsdhost = '127.0.0.1';
 ###
+
+sub send_counter
+{
+  my $a = shift;
+  my $b = shift;
+  $sock->send("$PRENAME$a:$b|c|" . '@0.01');
+}
+
+# init the $sock variable
+$sock = IO::Socket::INET->new(Proto => 'udp', PeerPort => $statsdport, PeerAddr => $statsdhost) or die "Could not create socket: $!\n";
+
 
 while (1 == 1)
 {
@@ -33,5 +49,6 @@ print "start: " . time . "\n";
     $STARTTIME = time;
   } 
 
+send_counter('time', time);
 print "end  : " . time . "\n";
 }
