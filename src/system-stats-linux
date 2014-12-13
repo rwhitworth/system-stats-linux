@@ -3,4 +3,35 @@ use strict;
 use warnings;
 $|++;
 
+###
+# Load Modules
+use Time::HiRes; # 5.8+
+###
 
+
+###
+# Constants
+my $SLEEPTIME = 1000; # in microseconds
+my $TIMEFRAME = 10; # in seconds
+my $STARTTIME = time;
+###
+
+###
+# Variables
+my $ENDTIME = time;
+###
+
+while (1 == 1)
+{
+$STARTTIME = $ENDTIME;
+$ENDTIME = $STARTTIME + 10;
+print "start: " . time . "\n";
+
+  while ($STARTTIME < $ENDTIME)
+  {
+    Time::HiRes::usleep($SLEEPTIME);
+    $STARTTIME = time;
+  } 
+
+print "end  : " . time . "\n";
+}
