@@ -5,25 +5,26 @@ $|++;
 
 ###
 # Load Modules
-use Time::HiRes; # 5.8+
-use IO::Socket; # 5.8+
+use Time::HiRes; 	# perl 5.8+ required
+use IO::Socket; 	# perl 5.8+ required
 ###
 
 
 ###
 # Constants
-my $SLEEPTIME = 1000; # in microseconds
-my $TIMEFRAME = 10; # in seconds
-my $STARTTIME = time;
-my $PRENAME = 'system-stats-linux' . '.';
+my $DEBUG 	= "0";
+my $SLEEPTIME 	= 1000; # in microseconds
+my $TIMEFRAME 	= 10; # in seconds
+my $STARTTIME 	= time;
+my $PRENAME 	= 'system-stats-linux' . '.';
 ###
 
 ###
 # Variables
-my $ENDTIME = time;
-my $sock; # socket used to send to statsd
-my $statsdport = 8125;
-my $statsdhost = '127.0.0.1';
+my $ENDTIME 	= time;
+my $sock; 		# socket used to send to statsd
+my $statsdport	= 8125;
+my $statsdhost	= '192.168.3.74';
 ###
 
 sub send_counter
@@ -37,11 +38,51 @@ sub send_counter
 $sock = IO::Socket::INET->new(Proto => 'udp', PeerPort => $statsdport, PeerAddr => $statsdhost, Blocking=>0) or die "Could not create socket: $!\n";
 
 
+
+
+
+sub num_processors
+{
+  my $count = 0;
+  open(my $FH, "<", '/proc/cpuinfo') or return 0;
+  while (<$FH>)
+  {
+    my $line = $_;
+    if ($line =~ /^processor.*?: (\d{1,4})/)
+    {
+      # do stuff
+      $count = $1;
+    }
+  }
+  close($FH); 
+  $count++;
+  return $count;
+}
+
+sub uptime
+{
+  my $up = 0;
+  open(my $FH, "<", '/proc/uptime') or return 0;
+  while (<$FH>)
+  {
+    my $line = $_;
+    if ($line =~ /(\d{1,16})\..*/)
+    {
+      # do stuff
+      $up = $1;
+    }
+  }
+  return $up;
+}
+
+
+
+
 while (1 == 1)
 {
-$STARTTIME = $ENDTIME;
-$ENDTIME = $STARTTIME + 10;
-print "start: " . time . "\n";
+  $STARTTIME = $ENDTIME;
+  $ENDTIME = $STARTTIME + 10;
+  if ($DEBUG) { print "start: " . time . "\n"; }
 
   while ($STARTTIME < $ENDTIME)
   {
@@ -49,6 +90,8 @@ print "start: " . time . "\n";
     $STARTTIME = time;
   } 
 
-send_counter('time', time);
-print "end  : " . time . "\n";
+  send_counter('time', time);
+  send_counter('num_processors', num_processors);
+  send_counter('uptime', uptime);
+  if ($DEBUG) { print "end  : " . time . "\n"; }
 }
